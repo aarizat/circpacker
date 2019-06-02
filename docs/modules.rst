@@ -4,4 +4,6 @@ circpacker
 .. toctree::
    :maxdepth: 4
 
-   circpacker
+   basegeom
+   packer
+   slopegeometry
