@@ -20,7 +20,7 @@ circpacker : Circle Packer
 in closed polygons.
 
 
-.. figure:: https://rawgit.com/aarizat/circpacker/master/figures/polygon_Irreg.svg
+.. figure:: https://raw.githack.com/aarizat/circpacker/master/figures/polygon_Irreg.svg
         :alt: plot example1
 
 
@@ -99,6 +99,6 @@ Now, let's see an example for a autosimilar ``bimsoil`` model.
 For a simple slope with h=15 m, inclination H:V of 1:1.5, crown and foot lengths of 2/3h, and
 depth 1/3h.
 
-.. figure:: https://rawgit.com/aarizat/circpaker/master/figures/autosim_slope.svg
+.. figure:: https://raw.githack.com/aarizat/circpacker/master/figures/autosim_slope.svg
         :alt: plot example2
 
