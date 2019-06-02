@@ -69,12 +69,12 @@ To produce the plot shown above execute the following script
 
     from numpy import array
     from circpacker.basegeom import Polygon
-    from circpacker.packer import CircPacking
+    from circpacker.packer import CircPacking as cp
     coordinates = array([[1, 1], [2, 5], [4.5, 6], [8, 3], [7, 1],
                          [4, 0]])
     polygon = Polygon(coordinates)
     boundCoords = polygon.boundCoords
-    CircPack = CircPacking(boundCoords, depth=10)
+    CircPack = cp(boundCoords, depth=10)
     CircPack.plot(plotTriMesh=True)
 
 
@@ -93,11 +93,11 @@ Now, let's see an example for a autosimilar ``bimsoil`` model.
     slopeGeometry = AnthropicSlope(h, [1, 1.5], 2/3*h, 2/3*h, 1/3*h)
     boundCoords = slopeGeometry.boundCoords
     polygon = Polygon(boundCoords)
-    CircPack = Packing(boundCoords, minAngle=20, maxArea=0.35*polygon.area, length=h*0.05)
+    CircPack = cp(boundCoords, minAngle=20, maxArea=0.35*polygon.area, length=0.05*h)
     CircPack.plot(plotTriMesh=True)
 
 For a simple slope with h=15 m, inclination H:V of 1:1.5, crown and foot lengths of 2/3h, and
-depth 1/3h.
+depth 1/3h. Minimum angle and maximum area for each Delaunay triangle of 20° and 35% of slope area, respectively.
 
 .. figure:: https://raw.githack.com/aarizat/circpacker/master/figures/autosim_slope.svg
         :alt: plot example2
