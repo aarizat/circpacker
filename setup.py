@@ -18,7 +18,7 @@ with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
 
 
 requirements = [ 'numpy',
-                 'scipy'
+                 'scipy',
                  'matplotlib',
                  'triangle']
 
