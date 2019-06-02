@@ -232,11 +232,9 @@ class Triangle:
         Parameters:
             depth (`int`): Fractal depth. Number that indicate how many\
                 circles are fractally generated from the `incirle` to each\
-                vertice of the triangle. If this number is not given, then,\
-                the fractal generation of circles is done up to a circle\
-                reachs a radius to lower than the five percent of the\
-                incircle radius.
-            lenght (`int` or `float`): characteristic length.
+                vertice of the triangle.
+            lenght (`int` or `float`): lenght as which the recurse iteration
+                stop because the circles diamters are smaller than lenght.
             want2plot (`bool`): Variable to check if a plot is wanted.\
                 The default value is ``False``.
 
@@ -258,9 +256,9 @@ class Triangle:
 
             >>> from numpy import array
             >>> from basegeom import Triangle
-            >>> coords = array([[2, 1], [6, 1], [4, 5.5]])
+            >>> coords = array([[1, 1.5], [6, 2.5], [4, 5.5]])
             >>> triangle = Triangle(coords)
-            >>> cirsInTri = triangle.circInTriangle(depth=5, want2plot=True)
+            >>> cirsInTri = triangle.circInTriangle(lenght=0.5, want2plot=True)
 
             .. plot::
 

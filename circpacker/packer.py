@@ -23,17 +23,14 @@ class CircPacking:
         coordinates ((n, 2) `numpy.ndarray`): Coordinates of vertices of the\
         polygon.
         depth (`int`): Depth fractal for each triangle that compose the\
-            triangular mesh. If this number is not given, then,\
-            the fractal generation of circles is done up to a circle\
-            reachs a radius to lower than the five percent of the\
-            incircle radius. Large values of `depth` might produce internal\
-            variables that tend to infinite, then a\
-            ``ValueError`` is produced with a warning message\
-            ``array must not contain infs or NaNs``.
+            triangular mesh. Large values of `depth` might produce internal\
+            variables that tend to infinite, then a ``ValueError`` is\
+            produced with a warning message ``array must not contain infs or\
+            NaNs``.
         minAngle (`int` or `float`): Minimum angle for each triangle of the\
-            delaunay triangulation.
+            Delaunay triangulation.
         maxArea (`int` or `float`): Maximum area for each triangle of the\
-            delaunay triangulation.
+            Delaunay triangulation.
         length (`int` or `float`): Characteristic length This variable is\
             used to model bimsoils/bimrock. The default value is None.
 
