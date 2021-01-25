@@ -102,3 +102,13 @@ depth 1/3h. Minimum angle and maximum area for each Delaunay triangle of 20° an
 .. figure:: https://raw.githack.com/aarizat/circpacker/master/figures/autosim_slope.svg
         :alt: plot example2
 
+More information
+----------------
+
+Here is a list of papers based on ``circpacker``.
+
+* `Revista de la Facultad de Ciencias de la Universidad Nacional de Colombia <https://revistas.unal.edu.co/index.php/rfc/article/view/72343>`_
+* `Challenges and Innovations in Geomechanics <https://link.springer.com/chapter/10.1007%2F978-3-030-64518-2_87>`_
+
+
+
