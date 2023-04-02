@@ -7,14 +7,15 @@ closed polygon in :math:`\\mathbb{R}^2`.
 
 
 import numpy as np
-import matplotlib.pyplot as plt
-from scipy.spatial.distance import euclidean
+import numpy.typing as npt
+# import matplotlib.pyplot as plt
+
+Point = npt.ArrayLike[float, float]
+Vertices = npt.ArrayLike[Point, Point, Point]
 
 
-# %%
 class Circle:
-    '''Creates an instance of an object that defines a Circle once the
-    cartesian coordinates of its center and the radius are given.
+    '''Creates instances of circes objects.
 
     Attributes:
         center (`tuple` or `list`): (x, y)-cartesian coordinates of\
@@ -47,105 +48,35 @@ class Circle:
         The class ``Circle`` requires `NumPy <http://www.numpy.org/>`_
     '''
 
-    def __init__(self, center, radius):
-        '''Method for initializing the attributes of the class.'''
-        import numpy as np
-        self.center = np.array(center)
+    def __init__(self, center: Point = np.array([0.0, 0.0]), radius: float = np.inf):
+        self.center = center
         self.radius = radius
-        self.curvature = 1 / radius
-        self.diameter = 2 * radius
-        self.area = np.pi * radius**2
-        self.perimeter = 2 * radius * np.pi
+        self._curvature = None
+        self._diameter = None
+        self._area = None
+        self._perimeter = None
 
-    def descartesTheorem(self, circle1, circle2=None):
-        '''
-        Method to determine the tangent circles of the `Descartes theorem\
-        <https://en.wikipedia.org/wiki/Descartes%27_theorem#Special_cases>`_.
+    @property
+    def curvature(self):
+        self._curvature = 1 / self.radius
+        return self._curvature
 
-        To find centers of these circles, it calculates the
-        intersection points of two circles by using the construction of
-        triangles, proposed by `Paul Bourke, 1997\
-        <http://paulbourke.net/geometry/circlesphere/>`_.
+    @property
+    def diameter(self):
+        self._diameter = 2 * self.radius
+        return self._diameter
 
-        Parameters:
-            circle1 (`circle` object): Tangent circle to the circle object\
-                intantiated.
-            circle2 (`circle` object): Tangent circle to the circle object\
-                intantiated and to the `circle1`.
+    @property
+    def area(self):
+        self._area = np.pi * self.radius**2
+        return self._area
 
-       Returns:
-           circles (`tuple`): Each element of the tuple is a circle object.
-
-       Examples:
-           >>> import matplotlib.pyplot as plt
-           >>> from basegeom import Circle
-           >>> # Special case Descartes' Theorem (cicle with infite radius)
-           >>> circle = Circle((4.405957, 2.67671461), 0.8692056336001268)
-           >>> circle1 = Circle((3.22694724, 2.10008003), 0.4432620600509628)
-           >>> c2, c3 = circle.descartesTheorem(circle1)
-           >>> # plotting
-           >>> plt.axes()
-           >>> plt.gca().add_patch(plt.Circle(circle.center,
-                                   circle.radius, fill=False))
-           >>> plt.gca().add_patch(plt.Circle(circle1.center,
-                                   circle1.radius, fill=False))
-           >>> plt.gca().add_patch(plt.Circle(c2.center,
-                                   c2.radius, fc='r'))
-           >>> plt.gca().add_patch(plt.Circle(c3.center,
-                                   c3.radius, fc='r'))
-           >>> plt.axis('equal')
-           >>> plt.show()
-
-           >>> import matplotlib.pyplot as plt
-           >>> from basegeom import Circle
-           >>> # General case Descartes Theorem (three circle tangent mutually)
-           >>> circle = Circle((4.405957, 2.67671461), 0.8692056336001268)
-           >>> circle1 = Circle((3.22694724, 2.10008003), 0.4432620600509628)
-           >>> circle2 = Circle((3.77641134, 1.87408749), 0.1508620255299397)
-           >>> c3, c4 = circle.descartesTheorem(circle1, circle2)
-           >>> # plotting
-           >>> plt.axes()
-           >>> plt.gca().add_patch(plt.Circle(circle.center,
-                                   circle.radius, fill=False))
-           >>> plt.gca().add_patch(plt.Circle(circle1.center,
-                                   circle1.radius, fill=False))
-           >>> plt.gca().add_patch(plt.Circle(circle2.center,
-                                   circle2.radius, fill=False))
-           >>> plt.gca().add_patch(plt.Circle(c3.center,
-                                   c3.radius, fc='r'))
-           >>> plt.axis('equal')
-           >>> plt.show()
-        '''
-
-        if circle2 is None:
-            # Special case Descartes' theorem
-            radius = (self.curvature + circle1.curvature +
-                      2*(self.curvature*circle1.curvature)**0.5)**-1
-        else:
-            # General case Descartes Theorem
-            radius = (self.curvature + circle1.curvature +
-                      circle2.radius + circle2.curvature +
-                      2*((self.curvature*circle1.curvature) +
-                         (circle1.curvature*circle2.curvature) +
-                         (circle2.curvature*self.curvature))**0.5)**-1
-        # Distances between centers and intersection points
-        R1, R2 = self.radius + radius, circle1.radius + radius
-        # Distance between the centers of the intersected circles
-        dist = self.radius + circle1.radius
-        cos, sin = (circle1.center - self.center) / dist
-        # Distance to the chord
-        chordDist = (R1**2 - R2**2 + dist**2) / (2*dist)
-        # Half-length of the chord
-        halfChord = (R1**2 - chordDist**2)**0.5
-        center3 = (self.center[0] + chordDist*cos - halfChord*sin,
-                   self.center[1] + chordDist*sin + halfChord*cos)
-        center4 = (self.center[0] + chordDist*cos + halfChord*sin,
-                   self.center[1] + chordDist*sin - halfChord*cos)
-        circles = Circle(center3, radius), Circle(center4, radius)
-        return circles
+    @property
+    def perimeter(self):
+        self._perimeter = 2 * self.radius * np.pi
+        return self._perimeter
 
 
-# %%
 class Triangle:
     '''Creates an instance of an object that defines a Triangle once the
     coordinates of its three vertices in cartesian :math:`\\mathbb{R}^2` space
@@ -182,181 +113,59 @@ class Triangle:
                    'incircle'])
     '''
 
-    def __init__(self, coordinates):
-        '''Method for initializing the attributes of the class.'''
-        self.vertices = dict(zip('ABC', coordinates))
-        # same geometric properties of the triangle
-        self.getGeomProperties()
+    def __init__(self, vertices: Vertices):
+        self.vertices = vertices
+        self._area = None
+        self._perimeter = None
 
-    def getGeomProperties(self):
-        '''Method to set the attributes to the instanced object
+    @property
+    def area(self) -> float:
+        v1 = self.vertices[0] - self.vertices[1]
+        v2 = self.vertices[0] - self.vertices[2]
+        self._area = 0.5 * abs(np.linalg.norm(np.cross(v1, v2)))
+        return self._area
 
-        The established geometric attributes are the following:
-            * Area.
-            * Lenght of its three sides.
-            * Perimeter.
-            * Incircle (``Circle`` Object)
-            * Distance of each vertice to incenter.
-        '''
+    @property
+    def perimeter(self) -> float:
+        self._perimeter = sum(self._triangle_side_lengths(self.vertices).values())
+        return self._perimeter
 
-        vertsArray = np.array([*self.vertices.values()])
-        v = np.vstack((vertsArray, vertsArray[0]))
-        # Area (Gauss Equation)
-        area = 0.5*abs(sum(v[:-1, 0] * v[1:, 1] - v[:-1, 1] * v[1:, 0]))
-        # length three sides triangle.
-        sides = {'a': euclidean(self.vertices['B'], self.vertices['C']),
-                 'b': euclidean(self.vertices['A'], self.vertices['C']),
-                 'c': euclidean(self.vertices['A'], self.vertices['B'])}
-        perimeter = sides['a'] + sides['b'] + sides['c']
-        # Inscribed circle radius
-        radius = 2*area / perimeter
-        # Inscribed circle center
-        center = (sides['a'] * self.vertices['A'] +
-                  sides['b'] * self.vertices['B'] +
-                  sides['c'] * self.vertices['C']) / perimeter
-        # Distances of each vertice to incenter
-        distToIncenter = [euclidean(center, v) for v in self.vertices.values()]
-        # Set the attribute to the instanced object.
-        setattr(self, 'area', area)
-        setattr(self, 'sides', sides)
-        setattr(self, 'perimeter', perimeter)
-        setattr(self, 'distToIncenter', distToIncenter)
-        setattr(self, 'incircle', Circle(center, radius))
-        return
+    @property
+    def incircle(self) -> Circle:
+        radius = 2 * self.area / self.perimeter
+        x = sum(
+                np.array(v) * length 
+                for v, length in self._triangle_side_lengths(self.vertices)
+        )
+        center = x / self.perimeter
+        return Circle(center, radius)
 
-    def circInTriangle(self, depth=None, lenght=None, want2plot=False):
-        '''Method to pack circular particles within of a triangle. It apply
-        the Descartes theorem (special and general case) to generate mutually
-        tangent circles in a fractal way in the triangle.
-
-        Parameters:
-            depth (`int`): Fractal depth. Number that indicate how many\
-                circles are fractally generated from the `incirle` to each\
-                vertice of the triangle.
-            lenght (`int` or `float`): lenght as which the recurse iteration
-                stop because the circles diamters are smaller than lenght.
-            want2plot (`bool`): Variable to check if a plot is wanted.\
-                The default value is ``False``.
-
-        Returns:
-            lstCirc (`list`): `list` that contains all the circular\
-                particles packed in the triangle.
-
-        Note:
-            Large values of `depth` might produce internal variables that tend
-            to infinte, then a ``ValueError`` is produced with a warning
-            message ``array must not contain infs or NaNs``.
-
-        Examples:
-            >>> from numpy import array
-            >>> from circpacker.basegeom import Triangle
-            >>> coords = array([(2, 1.5), (4.5, 4), (6, 2)])
-            >>> triangle = Triangle(coords)
-            >>> cirsInTri = triangle.circInTriangle(depth=2, want2plot=True)
-
-            >>> from numpy import array
-            >>> from basegeom import Triangle
-            >>> coords = array([[1, 1.5], [6, 2.5], [4, 5.5]])
-            >>> triangle = Triangle(coords)
-            >>> cirsInTri = triangle.circInTriangle(lenght=0.5, want2plot=True)
-
-            .. plot::
-
-                from numpy import array
-                from circpacker.basegeom import Triangle
-                coords = array([(2, 1), (2, 8), (7, 1)])
-                triangle = Triangle(coords)
-                triangle.circInTriangle(want2plot=True)
-        '''
-        lstCirc = [self.incircle]
-        for vert, distance in zip(self.vertices.values(), self.distToIncenter):
-            auxCirc = self.incircle
-            auxDist = distance
-            if depth is None and lenght:
-                while True:
-                    radius = (auxCirc.radius*auxDist -
-                              auxCirc.radius**2) / (auxCirc.radius+auxDist)
-                    # Checking condition stop
-                    # (circle with center on the bisectrix)
-                    if 2*radius <= lenght:
-                        break
-                    dist = auxCirc.radius + radius  # dist between centers
-                    center = np.array(auxCirc.center) + (dist/auxDist) * (
-                            np.array(vert) - np.array(auxCirc.center))
-                    circle = Circle(center, radius)
-                    # Genereting circles within triangle (Descartes circles)
-                    c31, c32 = auxCirc.descartesTheorem(circle)
-                    lstCirc.extend((circle, c31, c32))
-                    # Updating variables
-                    auxDist = euclidean(vert, circle.center)
-                    auxCirc = circle
-            elif lenght is None and depth >= 0:
-                for i in range(1, depth+1):
-                    radius = (auxCirc.radius*auxDist -
-                              auxCirc.radius**2) / (auxCirc.radius+auxDist)
-                    dist = auxCirc.radius + radius  # dist between centers
-                    center = np.array(auxCirc.center) + (dist/auxDist) * (
-                            np.array(vert) - np.array(auxCirc.center))
-                    circle = Circle(center, radius)
-                    # Genereting circles within triangle (Descartes circles)
-                    c31, c32 = auxCirc.descartesTheorem(circle)
-                    c41, c42 = auxCirc.descartesTheorem(circle, c31)
-                    c51, c52 = circle.descartesTheorem(c31)
-                    c61, c62 = circle.descartesTheorem(c32)
-                    c71, c72 = auxCirc.descartesTheorem(c31)
-                    c81, c82 = auxCirc.descartesTheorem(c32)
-                    lstCirc.extend((circle, c31, c32, c41, c42, c52, c61, c71,
-                                    c82))
-                    # Updating variables
-                    auxDist = euclidean(vert, circle.center)
-                    auxCirc = circle
-        # Set the attribute to the instanced object.
-        setattr(self, 'lstCirc', lstCirc)
-        # plotting
-        if want2plot:
-            figure = self.plot()
-            for circle in lstCirc:
-                figure.add_patch(plt.Circle(circle.center, circle.radius,
-                                            fill=False, lw=1, ec='k'))
-        else:
-            return lstCirc
-
-    def plot(self):
-        '''Method for show a graphic of the triangle object.
-
-        Returns:
-            ax (`matplotlib.axes._subplots.AxesSubplot`): object associated\
-                with a matplotlib graphic.
-
-        Examples:
-            >>> from numpy import array
-            >>> from circpacker.basegeom import Triangle
-            >>> coords = array([(1, 1), (4, 8), (8, 5)])
-            >>> triangle = Triangle(coords)
-            >>> triangle.plot()
-
-            .. plot::
-
-                from numpy import array
-                from circpacker.basegeom import Triangle
-                coords = array([(2, 1), (2, 8), (7, 1)])
-                triangle = Triangle(coords)
-                triangle.plot()
-        '''
-
-        vert = np.array([*self.vertices.values()])
-        fig = plt.figure()
-        ax = fig.add_subplot(111)
-        # plotting
-        ax.plot(np.hstack((vert[:, 0], vert[0, 0])),
-                np.hstack((vert[:, 1], vert[0, 1])),
-                'k-', lw=2, label='Triangle')
-        ax.axis('equal')
-        ax.grid(ls='--', lw=0.6)
-        return ax
+    @staticmethod
+    def _triangle_side_lengths(vertices: Vertices) -> dict[tuple, float]:
+        return {
+            tuple(vertices[0]): np.linalg.norm(vertices[1] - vertices[2]),
+            tuple(vertices[1]): np.linalg.norm(vertices[0] - vertices[2]),
+            tuple(vertices[2]): np.linalg.norm(vertices[0] - vertices[1]),
+        }
 
 
-# %%
+def _mutually_tangent(c1: Circle, c2: Circle, c3: Circle) -> bool:
+    ...
+    # TODO
+
+
+def get_descartes_circles(c1: Circle, c2: Circle, c3: Circle) -> list[Circle]:
+    """ Applying Descartes' theorem
+    """
+    ...
+    # TODO
+
+
+def incircles_triangle(tri: Triangle) -> list[Circle]:
+    ...
+    # TODO
+
+
 class Polygon:
     '''Creates an instance of an object that defines a Polygon once the
     cartesian coordinates of its vertices are given.
