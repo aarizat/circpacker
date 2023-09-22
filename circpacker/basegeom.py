@@ -4,14 +4,21 @@ properties related to the geometry of these classes are determined.
 These classes are the basic inputs to pack circular particles in a
 closed polygon in :math:`\\mathbb{R}^2`.
 '''
-
+from dataclasses import dataclass
+from math import hypot
 
 import numpy as np
 import numpy.typing as npt
 # import matplotlib.pyplot as plt
 
-Point = npt.ArrayLike[float, float]
-Vertices = npt.ArrayLike[Point, Point, Point]
+
+@dataclass
+class Point:
+    self.x = float | int
+    self.y = float | int
+
+    def distance(self, other: 'Point') -> float:
+        return hypot(self.x - other.x, self.y - other.y)
 
 
 class Circle:
@@ -48,7 +55,7 @@ class Circle:
         The class ``Circle`` requires `NumPy <http://www.numpy.org/>`_
     '''
 
-    def __init__(self, center: Point = np.array([0.0, 0.0]), radius: float = np.inf):
+    def __init__(self, center: Point, radius: float = np.inf):
         self.center = center
         self.radius = radius
         self._curvature = None
@@ -113,22 +120,25 @@ class Triangle:
                    'incircle'])
     '''
 
-    def __init__(self, vertices: Vertices):
+    def __init__(self, vertices: list[Point]):
         self.vertices = vertices
         self._area = None
         self._perimeter = None
 
     @property
     def area(self) -> float:
-        v1 = self.vertices[0] - self.vertices[1]
-        v2 = self.vertices[0] - self.vertices[2]
+        v1 = self.vertices[0].distance(self.vertices[1])
+        v2 = self.vertices[0].distance(self.vertices[2])
         self._area = 0.5 * abs(np.linalg.norm(np.cross(v1, v2)))
         return self._area
 
     @property
     def perimeter(self) -> float:
-        self._perimeter = sum(self._triangle_side_lengths(self.vertices).values())
-        return self._perimeter
+        pairs = zip(
+            self.vertices,
+            self.vertices[1:] + self.vertices[:1]
+        )
+        return sum(p1.distance(p2) for p1, p2 in pairs)
 
     @property
     def incircle(self) -> Circle:
