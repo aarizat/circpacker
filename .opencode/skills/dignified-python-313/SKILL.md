@@ -4,7 +4,7 @@ description: Load ONLY when Python 3.13 is the active Python environment.
   Use when writing, reviewing, or refactoring Python to ensure adherence to LBYL exception
   handling patterns, modern type syntax (list[str], str | None), pathlib operations,
   ABC-based interfaces, absolute imports, and explicit error boundaries at CLI level.
-  Also provides production-tested code smell patterns from Dagster Labs for API design,
+  Also provides production-tested code smell patterns for API design,
   parameter complexity, and code organization. Essential for maintaining dignified
   Python standards.
 ---
