@@ -3,6 +3,15 @@
 Module for defining the class related to the slope geometry.
 """
 
+from __future__ import annotations
+
+from collections.abc import Sequence
+
+import numpy as np
+from numpy.typing import NDArray
+
+SurfaceCoords = NDArray[np.float64] | Sequence[Sequence[float]]
+
 
 # %%
 class AnthropicSlope:
@@ -38,23 +47,35 @@ class AnthropicSlope:
                    'maxDepth', 'boundCoords'])
         """
 
-    def __init__(self, slopeHeight, slopeDip, crownDist, toeDist, maxDepth=None):
-        """Method for initializing the attributes of the class."""
-        import numpy as np
+    slopeHeight: float
+    slopeDip: NDArray[np.float64]
+    crownDist: float
+    toeDist: float
+    maxDepth: float
+    boundCoords: NDArray[np.float64]
 
-        self.slopeHeight = slopeHeight
-        self.slopeDip = np.array(slopeDip)
-        self.crownDist = crownDist
-        self.toeDist = toeDist
+    def __init__(
+        self,
+        slopeHeight: float,
+        slopeDip: Sequence[float],
+        crownDist: float,
+        toeDist: float,
+        maxDepth: float | None = None,
+    ) -> None:
+        """Method for initializing the attributes of the class."""
+        self.slopeHeight = float(slopeHeight)
+        self.slopeDip = np.asarray(slopeDip, dtype=float)
+        self.crownDist = float(crownDist)
+        self.toeDist = float(toeDist)
         # Obtaining the maximum depth of the slope from the toe
         if maxDepth is None:
-            self.maxDepth()
+            self.maxDepth = self._calculate_max_depth()
         else:
-            self.maxDepth = maxDepth
+            self.maxDepth = float(maxDepth)
         # Defining the boundary coordinates
-        self.defineBoundary()
+        self.boundCoords = self.defineBoundary()
 
-    def maxDepth(self):
+    def _calculate_max_depth(self) -> float:
         """Method to obtain the maximum depth of a slope where a circular
         slope failure analysis can be performed.
 
@@ -73,8 +94,6 @@ class AnthropicSlope:
             >>> slopeGeometry.maxDepth()
             4.571428571428573
         """
-        import numpy as np
-
         # Origin of auxiliar coordinates at the begin of the slope-toe
         # Coordinates of the end of the slope-toe
         extremeToePointVec = np.array([self.toeDist, 0])
@@ -91,10 +110,9 @@ class AnthropicSlope:
         # the slope-height
         maxDepth = maximumCircleRadius - self.slopeHeight
         # Setting the attribute to the instanced object.
-        setattr(self, "maxDepth", maxDepth)
         return maxDepth
 
-    def defineBoundary(self):
+    def defineBoundary(self) -> NDArray[np.float64]:
         """Method to obtain the coordinates of the boundary vertices of the
         slope and plot it if it is wanted.
 
@@ -117,8 +135,6 @@ class AnthropicSlope:
                    [  0.        ,  16.57142857],
                    [  0.        ,   0.        ]])
         """
-        import numpy as np
-
         # Slope-face horizontal projection (horizontal distance)
         slopeDist = self.slopeHeight * self.slopeDip[0] / self.slopeDip[1]
         # Creating the contour
@@ -134,11 +150,11 @@ class AnthropicSlope:
             ]
         )
         # Setting the attribute to the instanced object.
-        setattr(self, "boundCoords", boundCoords)
+        self.boundCoords = boundCoords
 
         return boundCoords
 
-    def plotSlope(self):
+    def plotSlope(self) -> None:
         """Method for generating a graphic of the slope boundary.
 
         Examples:
@@ -195,16 +211,21 @@ class NaturalSlope:
         dict_keys(['surfaceCoords', 'slopeHeight', 'maxDepth', 'boundCoords'])
         """
 
-    def __init__(self, surfaceCoords):
-        """Method for initializing the attributes of the class."""
-        self.surfaceCoords = surfaceCoords
-        self.slopeHeight = surfaceCoords[0, 1] - surfaceCoords[-1, 1]
-        # Obtaining the maximum depth of the slope from the toe
-        self.maxDepth()
-        # Defining the boundary coordinates
-        self.defineBoundary()
+    surfaceCoords: NDArray[np.float64]
+    slopeHeight: float
+    maxDepth: float
+    boundCoords: NDArray[np.float64]
 
-    def maxDepth(self):
+    def __init__(self, surfaceCoords: SurfaceCoords) -> None:
+        """Method for initializing the attributes of the class."""
+        self.surfaceCoords = np.asarray(surfaceCoords, dtype=float)
+        self.slopeHeight = self.surfaceCoords[0, 1] - self.surfaceCoords[-1, 1]
+        # Obtaining the maximum depth of the slope from the toe
+        self.maxDepth = self._calculate_max_depth()
+        # Defining the boundary coordinates
+        self.boundCoords = self.defineBoundary()
+
+    def _calculate_max_depth(self) -> float:
         """Method to obtain the maximum depth of a slope where a circular
         slope failure analysis can be performed.
 
@@ -228,8 +249,6 @@ class NaturalSlope:
             >>> slopeGeometry.maxDepth()
             4.571428571428573
         """
-        import numpy as np
-
         # Distance between the two extreme points
         differenceVec = self.surfaceCoords[-1] - self.surfaceCoords[0]
         distExtrPts = np.linalg.norm(differenceVec)
@@ -239,10 +258,9 @@ class NaturalSlope:
         # the slope-height
         maxDepth = maximumCircleRadius - self.slopeHeight
         # Setting the attribute to the instanced object.
-        setattr(self, "maxDepth", maxDepth)
         return maxDepth
 
-    def defineBoundary(self):
+    def defineBoundary(self) -> NDArray[np.float64]:
         """Method to obtain the coordinates of the boundary vertices of the
         slope and plot it if it is wanted.
 
@@ -305,8 +323,6 @@ class NaturalSlope:
                    [  2.76601000e+01,   6.66133815e-16],
                    [  0.00000000e+00,   0.00000000e+00]])
         """
-        import numpy as np
-
         # Obtaining the origin vector to move the surface
         originVec = np.array(
             [
@@ -329,11 +345,11 @@ class NaturalSlope:
         boundCoords = np.vstack(([0, 0], boundCoords))
 
         # Setting the attribute to the instanced object.
-        setattr(self, "boundCoords", boundCoords)
+        self.boundCoords = boundCoords
 
         return boundCoords
 
-    def plotSlope(self):
+    def plotSlope(self) -> None:
         """Method for generating a graphic of the slope boundary.
 
         Examples:
