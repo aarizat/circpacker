@@ -6,17 +6,17 @@ Module to define particular circular tangents in a closed polygon in
 
 import math
 
-import numpy as np
 import matplotlib.pyplot as plt
-from triangle import triangulate
+import numpy as np
 from triangle import plot as tplot
+from triangle import triangulate
 
-from circpacker.basegeom import Triangle
+from circpacker.core.basegeom import Triangle
 
 
 # %%
 class CircPacking:
-    '''Creates an instance of an object that defines circular particles tangent
+    """Creates an instance of an object that defines circular particles tangent
     in a fractal way inside of a closed polygon in :math:`\\mathbb{R}^2`.
 
     Attributes:
@@ -46,16 +46,18 @@ class CircPacking:
         >>> coords = array([[1, 1], [2, 5], [4.5, 6], [8, 3], [7, 1], [4, 0]])
         >>> pckCircles = cp(coords, depth=5)
         >>> pckCircles.__dict__.keys()
-        dict_keys(['coordinates', 'minAngle', 'maxArea', 'lenght', 'depth',
+        dict_keys(['coordinates', 'minAngle', 'maxArea', 'length', 'lenght', 'depth',
                    'CDT', 'listCirc'])
-    '''
+    """
 
-    def __init__(self, coordinates, minAngle=None, maxArea=None, length=None,
-                 depth=None):
-        '''Method for initializing the attributes of the class.'''
+    def __init__(
+        self, coordinates, minAngle=None, maxArea=None, length=None, depth=None
+    ):
+        """Method for initializing the attributes of the class."""
         self.coordinates = coordinates
         self.minAngle = minAngle
         self.maxArea = maxArea
+        self.length = length
         self.lenght = length
         self.depth = depth
         # initializing methods
@@ -63,7 +65,7 @@ class CircPacking:
         self.generator()
 
     def triMesh(self):
-        '''Method to generate a triangles mesh in a polygon by using
+        """Method to generate a triangles mesh in a polygon by using
         `Constrained Delaunay triangulation\
          <https://en.wikipedia.org/wiki/Constrained_Delaunay_triangulation>`_.
 
@@ -92,27 +94,28 @@ class CircPacking:
             >>> boundCoords= polygon.boundCoords
             >>> circPack = cp(boundCoords, depth=3)
             >>> verts =  circPack.triMesh()
-        '''
+        """
 
         index = np.arange(len(self.coordinates[:-1]))
         indexSegmts = np.column_stack((index, np.hstack((index[1:], [0]))))
         # constrained Delaunay triangulation
         if self.maxArea is None and self.minAngle is None:
-            self.CDT = triangulate(tri={'vertices': self.coordinates[:-1],
-                                        'segments': indexSegmts},
-                                   opts='pq25S15')
+            self.CDT = triangulate(
+                tri={"vertices": self.coordinates[:-1], "segments": indexSegmts},
+                opts="pq25S15",
+            )
         else:
-            self.CDT = triangulate(tri={'vertices': self.coordinates[:-1],
-                                        'segments': indexSegmts},
-                                   opts='pq'+str(self.minAngle)+'a' +
-                                   str(self.maxArea))
-        vertsIndex = self.CDT['vertices']
-        trianglesIndex = self.CDT['triangles']
+            self.CDT = triangulate(
+                tri={"vertices": self.coordinates[:-1], "segments": indexSegmts},
+                opts="pq" + str(self.minAngle) + "a" + str(self.maxArea),
+            )
+        vertsIndex = self.CDT["vertices"]
+        trianglesIndex = self.CDT["triangles"]
         verts = vertsIndex[trianglesIndex]
         return verts
 
     def generator(self):
-        '''Method to generate circular particles in each triangle of the
+        """Method to generate circular particles in each triangle of the
         triangular mesh.
 
         Returns:
@@ -125,18 +128,18 @@ class CircPacking:
             >>> coords = array([[2, 2], [2, 6], [8, 6], [8, 2]])
             >>> circPack = cp(coords, depth=4)
             >>> lstCircles = circPack.generator() # list of circles
-        '''
+        """
 
         vertsTriangles = self.triMesh()  # Triangles mesh in polygon
         self.listCirc = list()
         for v in vertsTriangles:
-            self.listCirc += Triangle(v).circInTriangle(depth=self.depth,
-                                                        lenght=self.lenght,
-                                                        want2plot=False)
+            self.listCirc += Triangle(v).circInTriangle(
+                depth=self.depth, length=self.length, want2plot=False
+            )
         return self.listCirc
 
     def plot(self, plotTriMesh=False):
-        '''Method for show a graphic of the circles generated within of the
+        """Method for show a graphic of the circles generated within of the
         polyhon.
 
         Parameters:
@@ -198,32 +201,37 @@ class CircPacking:
                 boundCoords = slopeGeometry.boundCoords
                 pckCircles = cp(boundCoords, depth=6)
                 pckCircles.plot(plotTriMesh=True)
-        '''
+        """
 
         # plotting
         fig = plt.figure()
         ax = fig.add_subplot(111)
-        ax.plot(np.hstack((self.coordinates[:, 0], self.coordinates[0, 0])),
-                np.hstack((self.coordinates[:, 1], self.coordinates[0, 1])),
-                '-k', lw=1.5, label='Polygon')
-        ax.axis('equal')
-        ax.set_xlabel('$x$ [m]')
-        ax.set_ylabel('$y$ [m]')
-        ax.grid(ls='--', lw=0.5)
+        ax.plot(
+            np.hstack((self.coordinates[:, 0], self.coordinates[0, 0])),
+            np.hstack((self.coordinates[:, 1], self.coordinates[0, 1])),
+            "-k",
+            lw=1.5,
+            label="Polygon",
+        )
+        ax.axis("equal")
+        ax.set_xlabel("$x$ [m]")
+        ax.set_ylabel("$y$ [m]")
+        ax.grid(ls="--", lw=0.5)
         for circle in self.listCirc:
-            ax.add_patch(plt.Circle(circle.center, circle.radius, fill=False,
-                                    lw=1, ec='black'))
+            ax.add_patch(
+                plt.Circle(circle.center, circle.radius, fill=False, lw=1, ec="black")
+            )
         # plotting triangular mesh
         if plotTriMesh:
             fig = plt.figure()
             ax = fig.add_subplot(111)
-            ax.grid(ls='--', lw=0.5)
+            ax.grid(ls="--", lw=0.5)
             tplot.plot(ax, **self.CDT)
-            ax.axis('equal')
+            ax.axis("equal")
         return
 
     def frecHist(self):
-        '''Method to show the histogram of the diameters of the circular
+        """Method to show the histogram of the diameters of the circular
         particles packed in a closed polygon in :math:`\\mathbb{R}^2`.
 
         Examples:
@@ -239,7 +247,7 @@ class CircPacking:
                 boundCoords = polygon.boundCoords
                 circpack = cp(boundCoords, depth=10)
                 circpack.frecHist()
-        '''
+        """
 
         # Obtaining diameters histogram
         n = len(self.listCirc)  # simple size
@@ -248,17 +256,17 @@ class CircPacking:
         diams = [circle.diameter for circle in self.listCirc]
         bins = np.linspace(min(diams), max(diams), numBins)
         # plotting
-        plt.style.use('seaborn-white')
+        plt.style.use("seaborn-white")
         fig = plt.figure()
         ax = fig.add_subplot(111)
-        ax.hist(diams, bins, color='gray')
-        ax.grid(ls='--', lw=0.5)
-        ax.set_xlabel('Diámetro [$L$]')
-        ax.set_ylabel('Frecuencia [$L$]')
+        ax.hist(diams, bins, color="gray")
+        ax.grid(ls="--", lw=0.5)
+        ax.set_xlabel("Diámetro [$L$]")
+        ax.set_ylabel("Frecuencia [$L$]")
         return fig
 
     def logDiagram(self):
-        '''Method to show the log-log graph of the diameters and quantities
+        """Method to show the log-log graph of the diameters and quantities
         of circular particles packed in a closed polygon in
         :math:`\\mathbb{R}^2`.
 
@@ -275,7 +283,7 @@ class CircPacking:
                 boundCoords = polygon.boundCoords
                 pckCircles = cp(boundCoords, depth=8)
                 pckCircles.logDiagram()
-        '''
+        """
 
         # Obtaining diameters histogram
         n = len(self.listCirc)  # simple size
@@ -286,27 +294,27 @@ class CircPacking:
         hist, binEdges = np.histogram(diams, bins)
         nonZeroIndx = [i for i, k in enumerate(hist) if k != 0]
         histRed = hist[nonZeroIndx]
-        histRedRel = [float(k)/n * 100 for k in histRed]
-        nonZeroIndx4Bins = [k+1 for k in nonZeroIndx]
+        histRedRel = [float(k) / n * 100 for k in histRed]
+        nonZeroIndx4Bins = [k + 1 for k in nonZeroIndx]
         binEdgesRed = binEdges[nonZeroIndx4Bins]
         d, nD = binEdgesRed, histRedRel
         # plotting
         fig = plt.figure()
         ax = fig.add_subplot(111)
-        ax.plot(d, nD, 'ko', ms=4, mfc='none')
-        ax.set_xscale('log', basex=2)
-        ax.set_yscale('log', basey=2)
-        ax.set_xlabel('$\log_{2}\ d$')
-        ax.set_ylabel('$\log_{2}\ N_d$')
+        ax.plot(d, nD, "ko", ms=4, mfc="none")
+        ax.set_xscale("log", base=2)
+        ax.set_yscale("log", base=2)
+        ax.set_xlabel(r"$\log_{2}\ d$")
+        ax.set_ylabel(r"$\log_{2}\ N_d$")
         # ax.legend()
-        ax.grid(ls='--', lw=0.5)
-        ax.set_xlim((0.5*min(d), 1.5*max(d)))
-        ax.set_ylim((0.5*min(nD), 1.5*max(nD)))
+        ax.grid(ls="--", lw=0.5)
+        ax.set_xlim((0.5 * min(d), 1.5 * max(d)))
+        ax.set_ylim((0.5 * min(nD), 1.5 * max(nD)))
         return fig
 
 
 # %%
-'''
+"""
 BSD 2 license.
 
 Copyright (c) 2018, Universidad Nacional de Colombia, Andres Ariza-Triana
@@ -335,4 +343,4 @@ PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
 LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-'''
+"""

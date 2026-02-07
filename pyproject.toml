@@ -1,0 +1,62 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "circpacker"
+version = "1.0.0"
+description = "Circle packing in closed polygons"
+readme = "README.rst"
+license = { text = "BSD-2-Clause" }
+authors = [
+  { name = "Andres Ariza-Triana", email = "aarizatr@gmail.com" },
+]
+requires-python = ">=3.12"
+dependencies = [
+  "matplotlib>=3.9",
+  "numpy>=1.26",
+  "triangle",
+]
+keywords = ["circle-packing", "geometry", "geomechanics"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Education",
+  "Topic :: Scientific/Engineering",
+  "License :: OSI Approved :: BSD License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+]
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[dependency-groups]
+dev = [
+  "mypy>=1.13",
+  "pytest>=8.3",
+  "ruff>=0.9",
+]
+
+[tool.uv]
+default-groups = ["dev"]
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+testpaths = ["tests"]
+
+[tool.ruff]
+target-version = "py313"
+line-length = 88
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+
+[tool.mypy]
+python_version = "3.13"
+files = ["src"]
+ignore_missing_imports = true
+warn_unused_configs = true

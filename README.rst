@@ -33,31 +33,43 @@ Features
 Requirements
 ------------
 
-The code was written in Python 3. The packages `numpy <http://www.numpy.org/>`_,
-`scipy <https://www.scipy.org/>`_, `matplotlib <https://matplotlib.org/>`_
-and `triangle <http://dzhelil.info/triangle/index.html#>`_ are
-required for using ``circpacker``. All of them are
-downloadable from the PyPI repository by opening a terminal and typing the
-following code lines:
+``circpacker`` now targets Python 3.12+ and uses `uv <https://docs.astral.sh/uv/>`_
+for environment and dependency management.
 
 
-::
+Installation and development
+----------------------------
 
-    pip install numpy
-    pip install scipy
-    pip install matplotlib
-    pip install triangle
-
-
-Installation
-------------
-
-
-To install ``circpacker`` open a terminal and type:
+Clone the repository and sync dependencies:
 
 ::
 
-    pip install circpacker
+    uv sync
+
+Run tests:
+
+::
+
+    uv run pytest -q
+
+Run format and lint checks:
+
+::
+
+    uv run ruff format --check .
+    uv run ruff check .
+
+Run static type checks:
+
+::
+
+    uv run mypy
+
+Run Python examples/scripts:
+
+::
+
+    uv run python -c "import circpacker; print(circpacker.__version__)"
 
 
 Examples
@@ -109,6 +121,4 @@ Here is a list of papers based on ``circpacker``.
 
 * `Revista de la Facultad de Ciencias de la Universidad Nacional de Colombia <https://revistas.unal.edu.co/index.php/rfc/article/view/72343>`_
 * `Challenges and Innovations in Geomechanics <https://link.springer.com/chapter/10.1007%2F978-3-030-64518-2_87>`_
-
-
 
