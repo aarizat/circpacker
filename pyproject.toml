@@ -36,9 +36,9 @@ where = ["src"]
 
 [dependency-groups]
 dev = [
-  "mypy>=1.13",
   "pytest>=8.3",
   "ruff>=0.9",
+  "ty>=0.0.15",
 ]
 
 [tool.uv]

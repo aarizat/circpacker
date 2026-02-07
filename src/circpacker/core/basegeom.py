@@ -5,11 +5,21 @@ These classes are the basic inputs to pack circular particles in a
 closed polygon in :math:`\\mathbb{R}^2`.
 """
 
+from __future__ import annotations
+
+from collections.abc import Sequence
+from typing import Literal, overload
+
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.axes import Axes
+from matplotlib.patches import Circle as PatchCircle
+from numpy.typing import NDArray
+
+Point2D = NDArray[np.float64] | Sequence[float]
 
 
-def _euclidean_distance(point_a, point_b) -> float:
+def _euclidean_distance(point_a: Point2D, point_b: Point2D) -> float:
     """Return Euclidean distance between two 2D points."""
 
     delta = np.asarray(point_a) - np.asarray(point_b)
@@ -52,18 +62,27 @@ class Circle:
         The class ``Circle`` requires `NumPy <http://www.numpy.org/>`_
     """
 
-    def __init__(self, center, radius):
+    center: NDArray[np.float64]
+    radius: float
+    curvature: float
+    diameter: float
+    area: float
+    perimeter: float
+
+    def __init__(self, center: Point2D, radius: float) -> None:
         """Method for initializing the attributes of the class."""
-        import numpy as np
+        self.center = np.asarray(center, dtype=float)
+        self.radius = float(radius)
+        self.curvature = 1 / self.radius
+        self.diameter = 2 * self.radius
+        self.area = np.pi * self.radius**2
+        self.perimeter = 2 * self.radius * np.pi
 
-        self.center = np.array(center)
-        self.radius = radius
-        self.curvature = 1 / radius
-        self.diameter = 2 * radius
-        self.area = np.pi * radius**2
-        self.perimeter = 2 * radius * np.pi
-
-    def descartesTheorem(self, circle1, circle2=None):
+    def descartesTheorem(
+        self,
+        circle1: Circle,
+        circle2: Circle | None = None,
+    ) -> tuple[Circle, Circle]:
         """
         Method to determine the tangent circles of the `Descartes theorem\
         <https://en.wikipedia.org/wiki/Descartes%27_theorem#Special_cases>`_.
@@ -203,13 +222,24 @@ class Triangle:
                    'incircle'])
     """
 
-    def __init__(self, coordinates):
+    vertices: dict[str, NDArray[np.float64]]
+    area: float
+    sides: dict[str, float]
+    perimeter: float
+    distToIncenter: list[float]
+    incircle: Circle
+    lstCirc: list[Circle]
+
+    def __init__(
+        self,
+        coordinates: NDArray[np.float64] | Sequence[Sequence[float]],
+    ) -> None:
         """Method for initializing the attributes of the class."""
-        self.vertices = dict(zip("ABC", coordinates))
+        self.vertices = dict(zip("ABC", np.asarray(coordinates, dtype=float)))
         # same geometric properties of the triangle
         self.getGeomProperties()
 
-    def getGeomProperties(self):
+    def getGeomProperties(self) -> None:
         """Method to set the attributes to the instanced object
 
         The established geometric attributes are the following:
@@ -244,14 +274,41 @@ class Triangle:
             _euclidean_distance(center, v) for v in self.vertices.values()
         ]
         # Set the attribute to the instanced object.
-        setattr(self, "area", area)
-        setattr(self, "sides", sides)
-        setattr(self, "perimeter", perimeter)
-        setattr(self, "distToIncenter", distToIncenter)
-        setattr(self, "incircle", Circle(center, radius))
+        self.area = float(area)
+        self.sides = sides
+        self.perimeter = perimeter
+        self.distToIncenter = distToIncenter
+        self.incircle = Circle(center, radius)
         return
 
-    def circInTriangle(self, depth=None, lenght=None, want2plot=False, *, length=None):
+    @overload
+    def circInTriangle(
+        self,
+        depth: int | None = None,
+        lenght: float | None = None,
+        *,
+        want2plot: Literal[False] = False,
+        length: float | None = None,
+    ) -> list[Circle]: ...
+
+    @overload
+    def circInTriangle(
+        self,
+        depth: int | None = None,
+        lenght: float | None = None,
+        *,
+        want2plot: Literal[True],
+        length: float | None = None,
+    ) -> None: ...
+
+    def circInTriangle(
+        self,
+        depth: int | None = None,
+        lenght: float | None = None,
+        want2plot: bool = False,
+        *,
+        length: float | None = None,
+    ) -> list[Circle] | None:
         """Method to pack circular particles within of a triangle. It apply
         the Descartes theorem (special and general case) to generate mutually
         tangent circles in a fractal way in the triangle.
@@ -302,7 +359,7 @@ class Triangle:
                 raise ValueError(msg)
             lenght = length
 
-        lstCirc = [self.incircle]
+        lstCirc: list[Circle] = [self.incircle]
         for vert, distance in zip(self.vertices.values(), self.distToIncenter):
             auxCirc = self.incircle
             auxDist = distance
@@ -348,18 +405,24 @@ class Triangle:
                     auxDist = _euclidean_distance(vert, circle.center)
                     auxCirc = circle
         # Set the attribute to the instanced object.
-        setattr(self, "lstCirc", lstCirc)
+        self.lstCirc = lstCirc
         # plotting
         if want2plot:
             figure = self.plot()
             for circle in lstCirc:
                 figure.add_patch(
-                    plt.Circle(circle.center, circle.radius, fill=False, lw=1, ec="k")
+                    PatchCircle(
+                        tuple(circle.center),
+                        circle.radius,
+                        fill=False,
+                        lw=1,
+                        ec="k",
+                    )
                 )
         else:
             return lstCirc
 
-    def plot(self):
+    def plot(self) -> Axes:
         """Method for show a graphic of the triangle object.
 
         Returns:
@@ -408,13 +471,19 @@ class Polygon:
             of the polygon.
     """
 
-    def __init__(self, coordinates):
+    coordinates: NDArray[np.float64]
+    boundCoords: NDArray[np.float64]
+
+    def __init__(
+        self,
+        coordinates: NDArray[np.float64] | Sequence[Sequence[float]],
+    ) -> None:
         """Method for initializing the attributes of the class."""
-        self.coordinates = coordinates
-        self.boundCoords = np.vstack((coordinates, coordinates[0]))
+        self.coordinates = np.asarray(coordinates, dtype=float)
+        self.boundCoords = np.vstack((self.coordinates, self.coordinates[0]))
         self.area()
 
-    def area(self):
+    def area(self) -> float:
         """Method for determine the area of the polygon.
 
         Returns:
@@ -446,7 +515,7 @@ class Polygon:
         setattr(self, "area", area)
         return area
 
-    def plot(self):
+    def plot(self) -> None:
         """Method for show the graph of the polygon.
 
         Examples:
